@@ -110,18 +110,6 @@ function tokenizePython(code) {
     return tokens;
 }
 
-function parseFunctionNames(tokens) {
-    const names = new Set();
-
-    for (let i = 0; i < tokens.length - 1; i += 1) {
-        if (tokens[i].type === "name" && (tokens[i].value === "def" || tokens[i].value === "class")) {
-            const next = tokens[i + 1];
-            if (next && next.type === "name") names.add(next.value);
-        }
-    }
-
-    return names;
-}
 
 function nextToken(tokens, index) {
     return index + 1 < tokens.length ? tokens[index + 1] : null;
@@ -129,9 +117,11 @@ function nextToken(tokens, index) {
 
 function analyzePython(code) {
     const tokens = tokenizePython(code);
-    const definedNames = parseFunctionNames(tokens);
+
     const operators = [];
     const operands = [];
+
+    const declarationParens = new Set();
 
     for (let i = 0; i < tokens.length; i += 1) {
         const token = tokens[i];
@@ -139,19 +129,114 @@ function analyzePython(code) {
 
         if (token.type === "name") {
             const next = nextToken(tokens, i);
-            const isCall = next && next.value === "(" && !KEYWORD_OPERATORS.has(value);
+
+            if (value === "def") {
+                operators.push("def");
+
+                if (next && next.type === "name") {
+                    operators.push(`${next.value}()`);
+
+                    const openIndex = i + 2;
+
+                    if (
+                        openIndex < tokens.length &&
+                        tokens[openIndex].value === "("
+                    ) {
+                        let depth = 0;
+
+                        for (
+                            let j = openIndex;
+                            j < tokens.length;
+                            j += 1
+                        ) {
+                            if (tokens[j].value === "(") {
+                                depth += 1;
+
+                                if (depth === 1) {
+                                    declarationParens.add(j);
+                                }
+                            } else if (tokens[j].value === ")") {
+                                if (depth === 1) {
+                                    declarationParens.add(j);
+                                    break;
+                                }
+
+                                depth -= 1;
+                            }
+                        }
+                    }
+
+                    i += 1;
+                }
+
+                continue;
+            }
+
+            if (value === "class") {
+                operators.push("class");
+
+                if (next && next.type === "name") {
+                    operands.push(next.value);
+
+                    const openIndex = i + 2;
+
+                    if (
+                        openIndex < tokens.length &&
+                        tokens[openIndex].value === "("
+                    ) {
+                        let depth = 0;
+
+                        for (
+                            let j = openIndex;
+                            j < tokens.length;
+                            j += 1
+                        ) {
+                            if (tokens[j].value === "(") {
+                                depth += 1;
+
+                                if (depth === 1) {
+                                    declarationParens.add(j);
+                                }
+                            } else if (tokens[j].value === ")") {
+                                if (depth === 1) {
+                                    declarationParens.add(j);
+                                    break;
+                                }
+
+                                depth -= 1;
+                            }
+                        }
+                    }
+
+                    i += 1;
+                }
+
+                continue;
+            }
 
             if (CONSTANTS.has(value)) {
                 operands.push(value);
-            } else if (definedNames.has(value) || isCall) {
-                operators.push(value);
+            } else if (
+                next &&
+                next.value === "(" &&
+                !KEYWORD_OPERATORS.has(value)
+            ) {
+                operators.push(`${value}()`);
             } else if (KEYWORD_OPERATORS.has(value)) {
                 if (value === "if" || value === "elif") {
                     operators.push("if/elif");
-                } else if (value === "is" && next && next.value === "not") {
+                } else if (
+                    value === "is" &&
+                    next &&
+                    next.value === "not"
+                ) {
                     operators.push("is not");
                     i += 1;
-                } else if (value === "not" && next && next.value === "in") {
+                } else if (
+                    value === "not" &&
+                    next &&
+                    next.value === "in"
+                ) {
                     operators.push("not in");
                     i += 1;
                 } else {
@@ -160,37 +245,94 @@ function analyzePython(code) {
             } else {
                 operands.push(value);
             }
+
             continue;
         }
 
-        if (token.type === "string" || token.type === "number") {
+        if (
+            token.type === "string" ||
+            token.type === "number"
+        ) {
             operands.push(value);
             continue;
         }
 
         if (token.type === "symbol") {
-            if (value === "(") operators.push("()");
-            else if (value === "[") operators.push("[]");
-            else if (value === "{") operators.push("{}");
-            else if (value !== ")" && value !== "]" && value !== "}") operators.push(value);
+            if (value === "(") {
+                if (declarationParens.has(i)) {
+                    continue;
+                }
+
+                const previous = i > 0 ? tokens[i - 1] : null;
+
+                const isFunctionCall =
+                    previous &&
+                    previous.type === "name" &&
+                    !KEYWORD_OPERATORS.has(previous.value);
+
+                if (isFunctionCall) {
+                    continue;
+                }
+
+                operators.push("()");
+            } else if (value === "[") {
+                operators.push("[]");
+            } else if (value === "{") {
+                operators.push("{}");
+            } else if (value === ")") {
+                if (declarationParens.has(i)) {
+                    continue;
+                }
+            } else if (
+                value !== "]" &&
+                value !== "}"
+            ) {
+                operators.push(value);
+            }
         }
     }
 
     const operatorFreq = new Map();
     const operandFreq = new Map();
 
-    for (const item of operators) operatorFreq.set(item, (operatorFreq.get(item) || 0) + 1);
-    for (const item of operands) operandFreq.set(item, (operandFreq.get(item) || 0) + 1);
+    for (const item of operators) {
+        operatorFreq.set(
+            item,
+            (operatorFreq.get(item) || 0) + 1
+        );
+    }
+
+    for (const item of operands) {
+        operandFreq.set(
+            item,
+            (operandFreq.get(item) || 0) + 1
+        );
+    }
 
     const eta1 = operatorFreq.size;
     const eta2 = operandFreq.size;
+
     const N1 = operators.length;
     const N2 = operands.length;
+
     const eta = eta1 + eta2;
     const N = N1 + N2;
-    const V = eta > 0 ? N * Math.log2(eta) : 0;
 
-    return { eta1, eta2, N1, N2, eta, N, V, operatorFreq, operandFreq };
+    const V = eta > 0
+        ? N * Math.log2(eta)
+        : 0;
+
+    return {
+        eta1,
+        eta2,
+        N1,
+        N2,
+        eta,
+        N,
+        V,
+        operatorFreq,
+        operandFreq
+    };
 }
 
 function sortedEntries(map) {
@@ -273,7 +415,7 @@ function saveCsv() {
         return;
     }
 
-    // Формат полностью соответствует таблице из методички:
+
     // j | Оператор | f1j | i | Операнд | f2i
     const operators = sortedEntries(metrics.operatorFreq);
     const operands = sortedEntries(metrics.operandFreq);
@@ -349,7 +491,7 @@ fileInput.addEventListener("change", event => {
     reader.onload = () => {
         codeInput.value = reader.result;
         clearResults();
-        document.getElementById("status").textContent = `Загружен файл: ${file.name}. Нажмите «Анализировать».`;
+        document.getElementById("status").textContent = `Загружен файл: ${file.name}.`;
     };
 
     reader.onerror = () => {
