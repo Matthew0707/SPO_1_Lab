@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Метрики Холстеда — анализ Python</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Метрики Холстеда: Python</h1>
+
+    </header>
+
+    <section class="toolbar">
+        <button id="openBtn">Открыть .py</button>
+        <button id="analyzeBtn">Анализировать</button>
+        <button id="clearBtn">Очистить</button>
+        <button id="saveBtn" disabled>Сохранить CSV</button>
+        <input type="file" id="fileInput" accept=".py,.txt" hidden>
+        <span id="status">Готово</span>
+    </section>
+
+
+
+    <section class="code-card">
+        <div class="section-title">
+            <h2>Код анализируемой программы</h2>
+
+        </div>
+        <textarea id="codeInput" spellcheck="false"></textarea>
+    </section>
+
+
+    <section class="tables-card">
+        <div class="table-column">
+            <h2>Операторы</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>j</th><th>Оператор</th><th>f1j</th></tr></thead>
+                    <tbody id="operatorsBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="table-column">
+            <h2>Операнды</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>i</th><th>Операнд</th><th>f2i</th></tr></thead>
+                    <tbody id="operandsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+    <section class="metrics-card">
+        <h2>Метрики Холстеда</h2>
+        <div class="metrics-grid">
+            <div class="metric"><span>η1</span><strong id="eta1">—</strong><small>уникальные операторы</small></div>
+            <div class="metric"><span>η2</span><strong id="eta2">—</strong><small>уникальные операнды</small></div>
+            <div class="metric"><span>N1</span><strong id="N1">—</strong><small>все операторы</small></div>
+            <div class="metric"><span>N2</span><strong id="N2">—</strong><small>все операнды</small></div>
+            <div class="metric extended"><span>η</span><strong id="eta">—</strong><small>словарь программы</small></div>
+            <div class="metric extended"><span>N</span><strong id="N">—</strong><small>длина программы</small></div>
+            <div class="metric extended"><span>V</span><strong id="V">—</strong><small>объём программы</small></div>
+        </div>
+    </section>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

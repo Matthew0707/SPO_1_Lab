@@ -1,0 +1,226 @@
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: #f4f6f8;
+    color: #111111;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.container {
+    width: min(1500px, 96vw);
+    margin: 0 auto;
+    padding: 24px 0 36px;
+}
+
+header {
+    margin-bottom: 18px;
+}
+
+header h1 {
+    margin: 0 0 6px;
+    font-size: 30px;
+    color: #111111;
+}
+
+header p {
+    margin: 0;
+    color: #555555;
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+button {
+    border: 1px solid #aeb6bf;
+    border-radius: 7px;
+    padding: 10px 18px;
+    background: #ffffff;
+    color: #111111;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+    background: #eaf0f6;
+}
+
+button:disabled {
+    color: #888888;
+    background: #e3e6e9;
+    cursor: not-allowed;
+}
+
+#status {
+    margin-left: auto;
+    color: #333333;
+    min-height: 20px;
+}
+
+.metrics-card,
+.code-card,
+.tables-card,
+.formula-card {
+    background: #ffffff;
+    border: 1px solid #d5dae0;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 18px;
+}
+
+.metrics-card h2,
+.formula-card h2,
+.table-column h2,
+.section-title h2 {
+    margin: 0 0 12px;
+    color: #111111;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.metric {
+    border: 1px solid #cfd5dc;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    background: #f9fafb;
+}
+
+.metric span {
+    display: block;
+    font-size: 17px;
+    font-weight: 700;
+    color: #111111;
+}
+
+.metric strong {
+    display: block;
+    margin: 7px 0;
+    font-size: 24px;
+    color: #111111;
+}
+
+.metric small {
+    color: #666666;
+}
+
+.section-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.section-title span {
+    color: #555555;
+    font-size: 14px;
+}
+
+#codeInput {
+    width: 100%;
+    height: 330px;
+    resize: vertical;
+    padding: 14px;
+    border: 1px solid #bfc6cd;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #111111;
+    caret-color: #111111;
+    font: 14px/1.45 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    outline: none;
+}
+
+#codeInput:focus {
+    border-color: #6d879f;
+    box-shadow: 0 0 0 2px rgba(109, 135, 159, 0.15);
+}
+
+.tables-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.table-column {
+    min-width: 0;
+
+}
+
+.table-wrap {
+    max-height: 420px;
+    overflow: auto;
+    border: 1px solid #d0d5db;
+    border-radius: 7px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #111111;
+    background: #ffffff;
+}
+
+th,
+td {
+    border-bottom: 1px solid #e1e4e8;
+    padding: 8px 10px;
+    text-align: left;
+}
+
+th {
+    position: sticky;
+    top: 0;
+    background: #eef1f4;
+    color: #111111;
+    z-index: 1;
+}
+
+td:first-child,
+td:last-child,
+th:first-child,
+th:last-child {
+    text-align: center;
+    width: 80px;
+}
+
+.formula-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.formula-grid div {
+    border: 1px solid #d5dae0;
+    background: #f9fafb;
+    border-radius: 7px;
+    padding: 12px;
+    text-align: center;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    color: #111111;
+}
+
+.formula-card p {
+    margin: 12px 0 0;
+    color: #555555;
+    font-size: 14px;
+}
+
+@media (max-width: 1050px) {
+    .metrics-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 800px) {
+    .tables-card { grid-template-columns: 1fr; }
+    .formula-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    #status { width: 100%; margin-left: 0; }
+}
